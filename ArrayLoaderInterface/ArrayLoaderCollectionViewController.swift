@@ -35,58 +35,39 @@ public final class ArrayLoaderCollectionViewController
     /**
     Initializes an array loader collection view controller.
 
-    - parameter pullRowHeight:      The row height for the pull-to-refresh cell. The default value of this parameter is
-                                    `44`.
-    - parameter activityRowHeight:  The row height for activity cells. The default value of this parameter is `44`.
-    - parameter errorRowHeight:     The row height for error cells. The default value of this parameter is `44`.
-    - parameter completedRowHeight: The row height for the completed footer cell. The default value of this parameter is
-                                    `0`.
+    - parameter pullItemSize:       The size for the pull-to-refresh cell - only one dimension is used at a time, based
+                                    on the current major layout axis. The default value of this parameter is `(44, 44)`.
+    - parameter activityItemSize:   The size for activity cells - only one dimension is used at a time, based on the
+                                    current major layout axis. The default value of this parameter is `(44, 44)`.
+    - parameter errorItemSize:      The row height for error cells - only one dimension is used at a time, based on the
+                                    current major layout axis. The default value of this parameter is `(44, 44)`.
+    - parameter completedItemSize:  The row height for the completed footer cell - only one dimension is used at a
+                                    time, based on the current major layout axis. The default value of this parameter is
+                                    `(0, 0)`.
     - parameter customHeaderView:   An optional custom header view, displayed after activity content for the next page.
     - parameter valuesLayoutModule: The layout module to use for the section displaying the array loader's values.
     */
     public init(
-        pullRowHeight: CGFloat = 44,
-        activityRowHeight: CGFloat = 44,
-        errorRowHeight: CGFloat = 44,
-        completedRowHeight: CGFloat = 0,
+        pullItemSize: CGSize = CGSize(width: 44, height: 44),
+        activityItemSize: CGSize = CGSize(width: 44, height: 44),
+        errorItemSize: CGSize = CGSize(width: 44, height: 44),
+        completedItemSize: CGSize = CGSize.zero,
         customHeaderView: UIView? = nil,
         valuesLayoutModule: LayoutModule)
     {
         self.customHeaderView = customHeaderView
 
         // create collection view layout
-        let layout = LayoutModulesCollectionViewLayout { section in
-            switch Section(rawValue: section)!
-            {
-            case .PreviousPagePull:
-                return LayoutModule.table(rowHeight: pullRowHeight)
-
-            case .PreviousPageActivity:
-                return LayoutModule.table(rowHeight: activityRowHeight)
-
-            case .PreviousPageError:
-                return LayoutModule.table(rowHeight: errorRowHeight)
-
-            case .CustomHeaderView:
-                return customHeaderView.map({ view in
-                    LayoutModule.dynamicTable(calculateHeight: { _, width in
-                        return view.sizeThatFits(CGSize(width: width, height: CGFloat.max)).height
-                    })
-                }) ?? LayoutModule.table(rowHeight: 0)
-
-            case .Values:
-                return valuesLayoutModule
-
-            case .NextPageActivity:
-                return LayoutModule.table(rowHeight: activityRowHeight)
-
-            case .NextPageError:
-                return LayoutModule.table(rowHeight: errorRowHeight)
-                
-            case .NextPageCompleted:
-                return LayoutModule.table(rowHeight: completedRowHeight)
-            }
-        }
+        self.layout = LayoutModulesCollectionViewLayout(majorAxis: .Vertical, moduleForSection: { section in
+            LayoutModule.moduleForSection(
+                Section(rawValue: section)!,
+                activityItemSize: activityItemSize,
+                errorItemSize: errorItemSize,
+                completedItemSize: completedItemSize,
+                customHeaderView: customHeaderView,
+                valuesLayoutModule: valuesLayoutModule
+            )
+        })
 
         // create collection view with layout
         let collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: layout)
@@ -128,6 +109,16 @@ public final class ArrayLoaderCollectionViewController
     /// The helper object for this controller.
     private var helper: CollectionViewHelper
         <ValueDisplay, ErrorDisplay, ActivityDisplay, PullDisplay, CompletedDisplay>?
+
+    /// The collection view layout.
+    private let layout: LayoutModulesCollectionViewLayout
+
+    /// The current major axis for the collection view layout.
+    public var majorAxis: Axis
+    {
+        get { return layout.majorAxis }
+        set { layout.majorAxis = newValue }
+    }
 
     // MARK: - Array Loader
 

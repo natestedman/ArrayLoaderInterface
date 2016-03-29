@@ -18,6 +18,7 @@
 		437031161C878DBE00FE9695 /* Section.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031151C878DBE00FE9695 /* Section.swift */; };
 		4370311D1C878E9700FE9695 /* DisplayProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4370311C1C878E9700FE9695 /* DisplayProtocols.swift */; };
 		437031211C8792F600FE9695 /* UICollectionView+Dequeue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031201C8792F600FE9695 /* UICollectionView+Dequeue.swift */; };
+		4395516D1CAB4BA100093D7C /* LayoutModule+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4395516C1CAB4BA100093D7C /* LayoutModule+Internal.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		437031151C878DBE00FE9695 /* Section.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Section.swift; sourceTree = "<group>"; };
 		4370311C1C878E9700FE9695 /* DisplayProtocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DisplayProtocols.swift; sourceTree = "<group>"; };
 		437031201C8792F600FE9695 /* UICollectionView+Dequeue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UICollectionView+Dequeue.swift"; sourceTree = "<group>"; };
+		4395516C1CAB4BA100093D7C /* LayoutModule+Internal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "LayoutModule+Internal.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +106,7 @@
 			isa = PBXGroup;
 			children = (
 				437031151C878DBE00FE9695 /* Section.swift */,
+				4395516C1CAB4BA100093D7C /* LayoutModule+Internal.swift */,
 				437031201C8792F600FE9695 /* UICollectionView+Dequeue.swift */,
 			);
 			name = Utilities;
@@ -196,6 +199,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4395516D1CAB4BA100093D7C /* LayoutModule+Internal.swift in Sources */,
 				437031161C878DBE00FE9695 /* Section.swift in Sources */,
 				437031031C87897200FE9695 /* ArrayLoaderCollectionViewController.swift in Sources */,
 				4370311D1C878E9700FE9695 /* DisplayProtocols.swift in Sources */,
