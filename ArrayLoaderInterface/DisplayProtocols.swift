@@ -18,7 +18,7 @@ public protocol ErrorDisplayType: class
     // MARK: - Error Type
 
     /// The error type displayed by this cell.
-    typealias Error: ErrorType
+    associatedtype Error: ErrorType
 
     // MARK: - Error
 
@@ -34,7 +34,7 @@ public protocol ValueDisplayType: class
     // MARK: - Value Type
 
     /// The type of value displayed by this cell.
-    typealias Value
+    associatedtype Value
 
     // MARK: - Value
 
