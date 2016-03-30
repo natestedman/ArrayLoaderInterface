@@ -47,13 +47,12 @@ public final class ArrayLoaderCollectionViewController
     - parameter customHeaderView:   An optional custom header view, displayed after activity content for the next page.
     - parameter valuesLayoutModule: The layout module to use for the section displaying the array loader's values.
     */
-    public init(
-        pullItemSize: CGSize = CGSize(width: 44, height: 44),
-        activityItemSize: CGSize = CGSize(width: 44, height: 44),
-        errorItemSize: CGSize = CGSize(width: 44, height: 44),
-        completedItemSize: CGSize = CGSize.zero,
-        customHeaderView: UIView? = nil,
-        valuesLayoutModule: LayoutModule)
+    public init(pullItemSize: CGSize = CGSize(width: 44, height: 44),
+                activityItemSize: CGSize = CGSize(width: 44, height: 44),
+                errorItemSize: CGSize = CGSize(width: 44, height: 44),
+                completedItemSize: CGSize = CGSize.zero,
+                customHeaderView: UIView? = nil,
+                valuesLayoutModule: LayoutModule)
     {
         self.customHeaderView = customHeaderView
 
