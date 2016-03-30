@@ -10,4 +10,4 @@ script:
   - /usr/local/bin/brew update
   - /usr/local/bin/brew install carthage
   - /usr/local/bin/carthage bootstrap --platform iOS
-  - xctool -project ArrayLoaderInterface.xcodeproj -scheme ArrayLoaderInterface
+  - xctool -sdk iphonesimulator -project ArrayLoaderInterface.xcodeproj -scheme ArrayLoaderInterface
