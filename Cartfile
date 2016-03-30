@@ -1,2 +1,2 @@
 github "natestedman/ArrayLoader" "master"
-github "natestedman/LayoutModules" "master"
+github "natestedman/LayoutModules" ~> 0.2.0
