@@ -1,4 +1,4 @@
 github "natestedman/LayoutModules" "0.3.0"
 github "antitypical/Result" "2.1.3"
 github "ReactiveCocoa/ReactiveCocoa" "v4.2.2"
-github "natestedman/ArrayLoader" "8096707757d9a76d15ed13d73240f10d863de4ae"
+github "natestedman/ArrayLoader" "c2a432f6e78a15a9586f09ba571096a704fb7bd5"
