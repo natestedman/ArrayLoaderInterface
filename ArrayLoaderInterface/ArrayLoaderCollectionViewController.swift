@@ -12,6 +12,7 @@ import ArrayLoader
 import LayoutModules
 import ReactiveCocoa
 import UIKit
+import enum Result.NoError
 
 // MARK: - Controller
 
@@ -54,6 +55,7 @@ public final class ArrayLoaderCollectionViewController
                 customHeaderView: UIView? = nil,
                 valuesLayoutModule: LayoutModule)
     {
+        self.arrayLoaderState = arrayLoader.value.state.value
         self.customHeaderView = customHeaderView
 
         // create collection view layout
@@ -87,17 +89,13 @@ public final class ArrayLoaderCollectionViewController
 
         // watch state and reload collection view
         arrayLoader.producer
-            .flatMap(.Latest, transform: { arrayLoader in
-                arrayLoader.state.producer
-            })
+            .flatMap(.Latest, transform: { $0.events.producer })
             .skip(1)
             .observeOn(UIScheduler())
-            .startWithNext({ _ in
-                if collectionView.window != nil // only reload once the collection view is in a window
-                {
-                    collectionView.reloadData()
-                }
+            .flatMap(.Concat, transform: { [weak self] event in
+                self?.updateCollectionViewProducer(for: event) ?? SignalProducer.empty
             })
+            .start()
     }
 
     // MARK: - Collection View
@@ -122,9 +120,13 @@ public final class ArrayLoaderCollectionViewController
     // MARK: - Array Loader
 
     /// The array loader being used by the controller.
-    public let arrayLoader = MutableProperty(AnyArrayLoader(StaticArrayLoader<ValueDisplay.Value>.empty
-        .promoteErrors(ErrorDisplay.Error.self))
+    public let arrayLoader = MutableProperty(
+        StaticArrayLoader<ValueDisplay.Value>.empty.promoteErrors(ErrorDisplay.Error.self)
     )
+
+    /// The current array loader display state, which may lag behind the actual state - updates are concatenated by
+    /// ReactiveCocoa.
+    var arrayLoaderState: LoaderState<ValueDisplay.Value, ErrorDisplay.Error>
 
     // MARK: - Custom Header View
 
@@ -141,4 +143,98 @@ public final class ArrayLoaderCollectionViewController
 
     /// A callback sent when the user selects a value from the collection view.
     public var didSelectValue: (ValueDisplay.Value -> ())?
+}
+
+extension ArrayLoaderCollectionViewController
+{
+    private func updateCollectionViewProducer(for event: LoaderEvent<ValueDisplay.Value, ErrorDisplay.Error>)
+        -> SignalProducer<(), NoError>
+    {
+        return SignalProducer { [weak self] observer, disposable in
+            // only reload once the collection view is in a window
+            guard let strong = self where strong.collectionView.window != nil else { return observer.sendCompleted() }
+
+            // update the local loader state - the collection view data source methods will reference this
+            strong.arrayLoaderState = event.state
+
+            switch event
+            {
+            case .Current:
+                strong.collectionView.reloadData()
+                observer.sendCompleted()
+
+            case .NextPageLoading:
+                disposable += strong.collectionView
+                    .updateForPageLoadingEventProducer(sections: [.NextPageActivity, .NextPageError])
+                    .start(observer)
+
+            case .PreviousPageLoading:
+                disposable += strong.collectionView
+                    .updateForPageLoadingEventProducer(sections: [.PreviousPageActivity, .PreviousPageError, .PreviousPagePull])
+                    .start(observer)
+
+            case let .NextPageLoaded(state, _, newElements):
+                disposable += strong.collectionView
+                    .updateForPageLoadedEventProducer(
+                        sections: [.NextPageActivity, .NextPageCompleted],
+                        indexPaths: (state.elements.count - newElements.count..<state.elements.count).map({ item in
+                            NSIndexPath(forItem: item, inSection: Section.Values.rawValue)
+                        })
+                    )
+                    .start(observer)
+
+            case let .PreviousPageLoaded(_, _, newElements):
+                disposable += strong.collectionView
+                    .updateForPageLoadedEventProducer(
+                        sections: [.PreviousPageActivity, .PreviousPagePull],
+                        indexPaths: (0..<newElements.count).map({ item in
+                            NSIndexPath(forItem: item, inSection: Section.Values.rawValue)
+                        })
+                    )
+                    .start(observer)
+
+            case .NextPageFailed:
+                disposable += strong.collectionView
+                    .updateForPageLoadingEventProducer(sections: [.NextPageActivity, .NextPageError])
+                    .start(observer)
+
+            case .PreviousPageFailed:
+                disposable += strong.collectionView
+                    .updateForPageLoadingEventProducer(sections: [.PreviousPageActivity, .PreviousPageError])
+                    .start(observer)
+            }
+        }
+    }
+}
+
+// MARK: - Collection View Updates
+extension UICollectionView
+{
+    private func batchUpdatesProducer(updates: () -> ()) -> SignalProducer<(), NoError>
+    {
+        return SignalProducer { observer, _ in
+            self.performBatchUpdates(updates, completion: { _ in observer.sendCompleted() })
+        }
+    }
+
+    private func reload(sections sections: [Section])
+    {
+        let set = NSMutableIndexSet()
+        sections.forEach({ set.addIndex($0.rawValue) })
+        reloadSections(set)
+    }
+
+    private func updateForPageLoadingEventProducer(sections sections: [Section]) -> SignalProducer<(), NoError>
+    {
+        return batchUpdatesProducer { self.reload(sections: sections) }
+    }
+
+    private func updateForPageLoadedEventProducer(sections sections: [Section], indexPaths: [NSIndexPath])
+        -> SignalProducer<(), NoError>
+    {
+        return batchUpdatesProducer {
+            self.reload(sections: sections)
+            self.insertItemsAtIndexPaths(indexPaths)
+        }
+    }
 }

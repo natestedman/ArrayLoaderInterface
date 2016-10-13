@@ -51,34 +51,34 @@ internal final class CollectionViewHelper
 
     @objc func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        let arrayLoader = parent.arrayLoader.value
+        let state = parent.arrayLoaderState
 
         switch Section(rawValue: section)!
         {
         case .PreviousPagePull:
-            return arrayLoader.previousPageState.value == .HasMore && parent.allowLoadingPreviousPage.value ? 1 : 0
+            return state.previousPageState == .HasMore && parent.allowLoadingPreviousPage.value ? 1 : 0
 
         case .PreviousPageActivity:
-            return arrayLoader.previousPageState.value == .Loading ? 1 : 0
+            return state.previousPageState == .Loading ? 1 : 0
 
         case .PreviousPageError:
-            return arrayLoader.previousPageState.value.error != nil ? 1 : 0
+            return state.previousPageState.error != nil ? 1 : 0
 
         case .CustomHeaderView:
             return parent.customHeaderView != nil ? 1 : 0
 
         case .Values:
-            return arrayLoader.state.value.elements.count
+            return state.elements.count
 
         case .NextPageActivity:
-            let state = arrayLoader.nextPageState.value
+            let state = state.nextPageState
             return state == .HasMore || state == .Loading ? 1 : 0
 
         case .NextPageError:
-            return arrayLoader.nextPageState.value.error != nil ? 1 : 0
+            return state.nextPageState.error != nil ? 1 : 0
 
         case .NextPageCompleted:
-            return arrayLoader.nextPageState.value == .Completed ? 1 : 0
+            return state.nextPageState == .Completed ? 1 : 0
         }
     }
 
@@ -95,7 +95,7 @@ internal final class CollectionViewHelper
 
         case .PreviousPageError:
             let cell = collectionView.dequeue(ErrorDisplay.self, forIndexPath: indexPath)
-            cell.error = parent.arrayLoader.value.previousPageState.value.error
+            cell.error = parent.arrayLoaderState.previousPageState.error
             return cell
 
         case .CustomHeaderView:
@@ -125,7 +125,7 @@ internal final class CollectionViewHelper
 
         case .Values:
             let cell = collectionView.dequeue(ValueDisplay.self, forIndexPath: indexPath)
-            cell.value = parent.arrayLoader.value.state.value.elements[indexPath.item]
+            cell.value = parent.arrayLoaderState.elements[indexPath.item]
             return cell
 
         case .NextPageActivity:
@@ -133,7 +133,7 @@ internal final class CollectionViewHelper
 
         case .NextPageError:
             let cell = collectionView.dequeue(ErrorDisplay.self, forIndexPath: indexPath)
-            cell.error = parent.arrayLoader.value.previousPageState.value.error
+            cell.error = parent.arrayLoaderState.previousPageState.error
             return cell
 
         case .NextPageCompleted:
@@ -144,7 +144,7 @@ internal final class CollectionViewHelper
     // MARK: - Collection View Delegate
     @objc func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath)
     {
-        parent.didSelectValue?(parent.arrayLoader.value.state.value.elements[indexPath.item])
+        parent.didSelectValue?(parent.arrayLoaderState.elements[indexPath.item])
     }
     
     @objc func collectionView(collectionView: UICollectionView, shouldHighlightItemAtIndexPath indexPath: NSIndexPath) -> Bool
@@ -154,7 +154,7 @@ internal final class CollectionViewHelper
     
     @objc func scrollViewDidScroll(scrollView: UIScrollView)
     {
-        if (parent.arrayLoader.value.nextPageState.value.isHasMore ?? false)
+        if (parent.arrayLoader.value.nextPageState.isHasMore ?? false)
             && parent.collectionView.indexPathsForVisibleItems().reduce(false, combine: { current, path in
                 current || path.section == Section.NextPageActivity.rawValue
             })
