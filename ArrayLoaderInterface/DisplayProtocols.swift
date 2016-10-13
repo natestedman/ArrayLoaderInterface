@@ -13,7 +13,7 @@ import CoreGraphics
 // MARK: - Errors
 
 /// A type of cell that can display errors.
-public protocol ErrorDisplayType: class
+public protocol ArrayLoaderErrorDisplaying: class
 {
     // MARK: - Error Type
 
@@ -29,7 +29,7 @@ public protocol ErrorDisplayType: class
 // MARK: - Values
 
 /// A type of cell that can display a value.
-public protocol ValueDisplayType: class
+public protocol ArrayLoaderValueDisplaying: class
 {
     // MARK: - Value Type
 
@@ -45,7 +45,7 @@ public protocol ValueDisplayType: class
 // MARK: - Pull-to-Refresh
 
 /// A type of cell that can display a pull-to-refresh interface.
-public protocol PullDisplayType: class
+public protocol ArrayLoaderPullToRefreshDisplaying: class
 {
     // MARK: - Properties
 

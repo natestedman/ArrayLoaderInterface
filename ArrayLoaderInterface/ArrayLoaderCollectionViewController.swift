@@ -20,10 +20,10 @@ import enum Result.NoError
 ///
 /// This is not a view controller class - instead, it should be used as part of view controller classes.
 public final class ArrayLoaderCollectionViewController
-    <ValueDisplay: ValueDisplayType,
-     ErrorDisplay: ErrorDisplayType,
+    <ValueDisplay: ArrayLoaderValueDisplaying,
+     ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
-     PullDisplay: PullDisplayType,
+     PullDisplay: ArrayLoaderPullToRefreshDisplaying,
      CompletedDisplay
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,

@@ -13,10 +13,10 @@ import UIKit
 
 /// Hides the implementation of collection view protocols to clients.
 internal final class CollectionViewHelper
-    <ValueDisplay: ValueDisplayType,
-     ErrorDisplay: ErrorDisplayType,
+    <ValueDisplay: ArrayLoaderValueDisplaying,
+     ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
-     PullDisplay: PullDisplayType,
+     PullDisplay: ArrayLoaderPullToRefreshDisplaying,
      CompletedDisplay
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,
