@@ -144,7 +144,10 @@ internal final class CollectionViewHelper
     // MARK: - Collection View Delegate
     @objc func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath)
     {
-        parent.didSelectValue?(parent.arrayLoaderState.elements[indexPath.item])
+        parent.didSelectValue?(
+            cell: collectionView.cellForItemAtIndexPath(indexPath),
+            value: parent.arrayLoaderState.elements[indexPath.item]
+        )
     }
     
     @objc func collectionView(collectionView: UICollectionView, shouldHighlightItemAtIndexPath indexPath: NSIndexPath) -> Bool

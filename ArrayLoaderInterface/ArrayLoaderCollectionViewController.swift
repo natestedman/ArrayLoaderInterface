@@ -142,7 +142,7 @@ public final class ArrayLoaderCollectionViewController
     // MARK: - Callbacks
 
     /// A callback sent when the user selects a value from the collection view.
-    public var didSelectValue: (ValueDisplay.Value -> ())?
+    public var didSelectValue: ((cell: UICollectionViewCell?, value: ValueDisplay.Value) -> ())?
 }
 
 extension ArrayLoaderCollectionViewController
