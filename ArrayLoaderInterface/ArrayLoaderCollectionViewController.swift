@@ -143,6 +143,9 @@ public final class ArrayLoaderCollectionViewController
 
     /// A callback sent when the user selects a value from the collection view.
     public var didSelectValue: ((cell: UICollectionViewCell?, value: ValueDisplay.Value) -> ())?
+
+    /// A callback sent when the user scrolls the collection view.
+    public var didScroll: ((offset: CGPoint) -> ())?
 }
 
 extension ArrayLoaderCollectionViewController

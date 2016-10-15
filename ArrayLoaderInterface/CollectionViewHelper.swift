@@ -164,5 +164,7 @@ internal final class CollectionViewHelper
         {
             parent.arrayLoader.value.loadNextPage()
         }
+
+        parent.didScroll?(offset: scrollView.contentOffset)
     }
 }
