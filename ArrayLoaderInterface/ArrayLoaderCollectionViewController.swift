@@ -162,8 +162,7 @@ extension ArrayLoaderCollectionViewController
         -> SignalProducer<(), NoError>
     {
         return SignalProducer { [weak self] observer, disposable in
-            // only reload once the collection view is in a window
-            guard let strong = self where strong.collectionView.window != nil else { return observer.sendCompleted() }
+            guard let strong = self else { return observer.sendCompleted() }
 
             // update the local loader state - the collection view data source methods will reference this
             strong.arrayLoaderState = event.state
