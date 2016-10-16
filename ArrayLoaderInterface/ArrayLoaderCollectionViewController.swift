@@ -96,6 +96,14 @@ public final class ArrayLoaderCollectionViewController
                 self?.updateCollectionViewProducer(for: event) ?? SignalProducer.empty
             })
             .start()
+
+        // automatically load the first page of new array loaders
+        arrayLoader.signal.observeNext({ loader in
+            if loader.elements.count == 0 && loader.nextPageState.isHasMore
+            {
+                loader.loadNextPage()
+            }
+        })
     }
 
     // MARK: - Collection View
