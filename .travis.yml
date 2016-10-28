@@ -7,7 +7,5 @@ install: true
 git:
   submodules: false
 script:
-  - /usr/local/bin/brew update
-  - /usr/local/bin/brew install carthage
   - /usr/local/bin/carthage bootstrap --platform iOS --no-use-binaries
   - xctool -sdk iphonesimulator -project ArrayLoaderInterface.xcodeproj -scheme ArrayLoaderInterface
