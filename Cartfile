@@ -1,2 +1,2 @@
-github "natestedman/ArrayLoader" "feature/events"
+github "natestedman/ArrayLoader" ~> 0.3.0
 github "natestedman/LayoutModules" ~> 0.3.0
