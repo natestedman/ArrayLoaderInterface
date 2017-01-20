@@ -13,7 +13,7 @@ import UIKit
 
 extension LayoutModule
 {
-    private static func conditionalTableModule(size: CGSize) -> LayoutModule
+    fileprivate static func conditionalTableModule(_ size: CGSize) -> LayoutModule
     {
         return LayoutModule.forMajorAxis(
             horizontal: LayoutModule.table(majorDimension: size.width),
@@ -24,7 +24,7 @@ extension LayoutModule
 
 extension LayoutModule
 {
-    internal static func moduleForSection(section: Section,
+    internal static func moduleForSection(_ section: Section,
                                           activityItemSize: CGSize,
                                           errorItemSize: CGSize,
                                           completedItemSize: CGSize,
@@ -33,38 +33,38 @@ extension LayoutModule
     {
         switch section
         {
-        case .PreviousPagePull:
+        case .previousPagePull:
             return conditionalTableModule(activityItemSize)
 
-        case .PreviousPageActivity:
+        case .previousPageActivity:
             return conditionalTableModule(activityItemSize)
 
-        case .PreviousPageError:
+        case .previousPageError:
             return conditionalTableModule(errorItemSize)
 
-        case .CustomHeaderView:
+        case .customHeaderView:
             return customHeaderView.map({ view in
                 LayoutModule.dynamicTable(calculateMajorDimension: { _, axis, otherDimension in
                     switch axis
                     {
-                    case .Horizontal:
-                        return view.sizeThatFits(CGSize(width: CGFloat.max, height: otherDimension)).width
-                    case .Vertical:
-                        return view.sizeThatFits(CGSize(width: otherDimension, height: CGFloat.max)).height
+                    case .horizontal:
+                        return view.sizeThatFits(CGSize(width: CGFloat.greatestFiniteMagnitude, height: otherDimension)).width
+                    case .vertical:
+                        return view.sizeThatFits(CGSize(width: otherDimension, height: CGFloat.greatestFiniteMagnitude)).height
                     }
                 })
             }) ?? LayoutModule.table(majorDimension: 0)
 
-        case .Values:
+        case .values:
             return valuesLayoutModule
 
-        case .NextPageActivity:
+        case .nextPageActivity:
             return conditionalTableModule(activityItemSize)
 
-        case .NextPageError:
+        case .nextPageError:
             return conditionalTableModule(errorItemSize)
 
-        case .NextPageCompleted:
+        case .nextPageCompleted:
             return conditionalTableModule(completedItemSize)
         }
     }

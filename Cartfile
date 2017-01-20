@@ -1,2 +1,2 @@
-github "natestedman/ArrayLoader" ~> 0.3.0
-github "natestedman/LayoutModules" ~> 0.3.0
+github "natestedman/ArrayLoader" "feature/swift3"
+github "natestedman/LayoutModules" "feature/swift3"

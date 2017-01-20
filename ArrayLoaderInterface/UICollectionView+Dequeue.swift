@@ -17,7 +17,7 @@ extension UICollectionView
 
      - parameter cellClass: The cell type.
      */
-    private func reuseIdentifier<T: UICollectionViewCell>(cellClass: T.Type) -> String
+    fileprivate func reuseIdentifier<T: UICollectionViewCell>(_ cellClass: T.Type) -> String
     {
         return "ArrayLoaderInterface-\(cellClass)"
     }
@@ -27,9 +27,9 @@ extension UICollectionView
 
      - parameter cellClass: The cell class to register.
      */
-    internal func registerCellClass<T: UICollectionViewCell>(cellClass: T.Type)
+    internal func registerCellClass<T: UICollectionViewCell>(_ cellClass: T.Type)
     {
-        registerClass(cellClass, forCellWithReuseIdentifier: reuseIdentifier(cellClass))
+        register(cellClass, forCellWithReuseIdentifier: reuseIdentifier(cellClass))
     }
 
     /**
@@ -38,8 +38,8 @@ extension UICollectionView
      - parameter cellClass:    The cell class to dequeue.
      - parameter forIndexPath: The index path to dequeue the cell for.
      */
-    internal func dequeue<T: UICollectionViewCell>(cellClass: T.Type, forIndexPath: NSIndexPath) -> T
+    internal func dequeue<T: UICollectionViewCell>(_ cellClass: T.Type, forIndexPath: IndexPath) -> T
     {
-        return dequeueReusableCellWithReuseIdentifier(reuseIdentifier(T.self), forIndexPath: forIndexPath) as! T
+        return dequeueReusableCell(withReuseIdentifier: reuseIdentifier(T.self), for: forIndexPath) as! T
     }
 }

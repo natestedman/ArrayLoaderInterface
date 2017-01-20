@@ -18,7 +18,7 @@ public protocol ArrayLoaderErrorDisplaying: class
     // MARK: - Error Type
 
     /// The error type displayed by this cell.
-    associatedtype Error: ErrorType
+    associatedtype Error: Swift.Error
 
     // MARK: - Error
 

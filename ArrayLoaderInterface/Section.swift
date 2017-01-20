@@ -12,26 +12,26 @@
 internal enum Section: Int
 {
     /// A section displaying a pull-to-refresh interface.
-    case PreviousPagePull
+    case previousPagePull
 
     /// A section displaying an activity indicator cell while the previous page is loading.
-    case PreviousPageActivity
+    case previousPageActivity
 
     /// A section displaying the previous page's error, if any.
-    case PreviousPageError
+    case previousPageError
 
     /// A section displaying an optional custom header view.
-    case CustomHeaderView
+    case customHeaderView
 
     /// A section displaying the values of the array loader.
-    case Values
+    case values
 
     /// A section displaying an activity indicator cell while the next page is loading.
-    case NextPageActivity
+    case nextPageActivity
 
     /// A section displaying the next page's error, if any.
-    case NextPageError
+    case nextPageError
 
     /// A section displaying a footer cell, shown after the next page has been completed.
-    case NextPageCompleted
+    case nextPageCompleted
 }

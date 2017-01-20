@@ -7,12 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		436114D91C87D5C900F1B0D7 /* LayoutModules.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 436114D81C87D5C900F1B0D7 /* LayoutModules.framework */; };
 		437030F91C87890F00FE9695 /* ArrayLoaderInterface.h in Headers */ = {isa = PBXBuildFile; fileRef = 437030F81C87890F00FE9695 /* ArrayLoaderInterface.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		437031031C87897200FE9695 /* ArrayLoaderCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031021C87897200FE9695 /* ArrayLoaderCollectionViewController.swift */; };
-		4370310C1C878A9200FE9695 /* ArrayLoader.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 437031081C878A9200FE9695 /* ArrayLoader.framework */; };
-		4370310E1C878A9200FE9695 /* ReactiveCocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4370310A1C878A9200FE9695 /* ReactiveCocoa.framework */; };
-		4370310F1C878A9200FE9695 /* Result.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4370310B1C878A9200FE9695 /* Result.framework */; };
 		437031121C878CD300FE9695 /* CustomHeaderViewCells.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031111C878CD300FE9695 /* CustomHeaderViewCells.swift */; };
 		437031141C878D5B00FE9695 /* CollectionViewHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031131C878D5B00FE9695 /* CollectionViewHelper.swift */; };
 		437031161C878DBE00FE9695 /* Section.swift in Sources */ = {isa = PBXBuildFile; fileRef = 437031151C878DBE00FE9695 /* Section.swift */; };
@@ -22,14 +18,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		436114D81C87D5C900F1B0D7 /* LayoutModules.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LayoutModules.framework; path = Carthage/Build/ios/LayoutModules.framework; sourceTree = "<group>"; };
 		437030F51C87890F00FE9695 /* ArrayLoaderInterface.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ArrayLoaderInterface.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		437030F81C87890F00FE9695 /* ArrayLoaderInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ArrayLoaderInterface.h; sourceTree = "<group>"; };
 		437030FA1C87890F00FE9695 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		437031021C87897200FE9695 /* ArrayLoaderCollectionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArrayLoaderCollectionViewController.swift; sourceTree = "<group>"; };
-		437031081C878A9200FE9695 /* ArrayLoader.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ArrayLoader.framework; path = ../Carthage/Build/iOS/ArrayLoader.framework; sourceTree = "<group>"; };
-		4370310A1C878A9200FE9695 /* ReactiveCocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReactiveCocoa.framework; path = ../Carthage/Build/iOS/ReactiveCocoa.framework; sourceTree = "<group>"; };
-		4370310B1C878A9200FE9695 /* Result.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Result.framework; path = ../Carthage/Build/iOS/Result.framework; sourceTree = "<group>"; };
 		437031111C878CD300FE9695 /* CustomHeaderViewCells.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomHeaderViewCells.swift; sourceTree = "<group>"; };
 		437031131C878D5B00FE9695 /* CollectionViewHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CollectionViewHelper.swift; sourceTree = "<group>"; };
 		437031151C878DBE00FE9695 /* Section.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Section.swift; sourceTree = "<group>"; };
@@ -43,10 +35,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4370310C1C878A9200FE9695 /* ArrayLoader.framework in Frameworks */,
-				4370310E1C878A9200FE9695 /* ReactiveCocoa.framework in Frameworks */,
-				436114D91C87D5C900F1B0D7 /* LayoutModules.framework in Frameworks */,
-				4370310F1C878A9200FE9695 /* Result.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,10 +73,6 @@
 		437031101C878A9700FE9695 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				437031081C878A9200FE9695 /* ArrayLoader.framework */,
-				436114D81C87D5C900F1B0D7 /* LayoutModules.framework */,
-				4370310A1C878A9200FE9695 /* ReactiveCocoa.framework */,
-				4370310B1C878A9200FE9695 /* Result.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -164,7 +148,7 @@
 				TargetAttributes = {
 					437030F41C87890F00FE9695 = {
 						CreatedOnToolsVersion = 7.3;
-						LastSwiftMigration = 0800;
+						LastSwiftMigration = 0810;
 					};
 				};
 			};
@@ -328,7 +312,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.natestedman.ArrayLoaderInterface;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
@@ -351,7 +335,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.natestedman.ArrayLoaderInterface;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 2.3;
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

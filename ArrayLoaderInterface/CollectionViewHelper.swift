@@ -17,14 +17,14 @@ internal final class CollectionViewHelper
      ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
      PullDisplay: ArrayLoaderPullToRefreshDisplaying,
-     CompletedDisplay
+     CompletedDisplay>
+    : NSObject, UICollectionViewDataSource, UICollectionViewDelegate
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,
            ActivityDisplay: UICollectionViewCell,
            PullDisplay: UICollectionViewCell,
            CompletedDisplay: UICollectionViewCell
-    >
-    : NSObject, UICollectionViewDataSource, UICollectionViewDelegate
+    
 {
     /// The type of the parent controller.
     typealias Parent =
@@ -44,61 +44,61 @@ internal final class CollectionViewHelper
     }
 
     // MARK: - Collection View Data Source
-    @objc func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int
+    @objc func numberOfSections(in collectionView: UICollectionView) -> Int
     {
-        return Section.NextPageCompleted.rawValue + 1
+        return Section.nextPageCompleted.rawValue + 1
     }
 
-    @objc func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
+    @objc func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
         let state = parent.arrayLoaderState
 
         switch Section(rawValue: section)!
         {
-        case .PreviousPagePull:
-            return state.previousPageState == .HasMore && parent.allowLoadingPreviousPage.value ? 1 : 0
+        case .previousPagePull:
+            return state.previousPageState == .hasMore && parent.allowLoadingPreviousPage.value ? 1 : 0
 
-        case .PreviousPageActivity:
-            return state.previousPageState == .Loading ? 1 : 0
+        case .previousPageActivity:
+            return state.previousPageState == .loading ? 1 : 0
 
-        case .PreviousPageError:
+        case .previousPageError:
             return state.previousPageState.error != nil ? 1 : 0
 
-        case .CustomHeaderView:
+        case .customHeaderView:
             return parent.customHeaderView != nil ? 1 : 0
 
-        case .Values:
+        case .values:
             return state.elements.count
 
-        case .NextPageActivity:
+        case .nextPageActivity:
             let state = state.nextPageState
-            return state == .HasMore || state == .Loading ? 1 : 0
+            return state == .hasMore || state == .loading ? 1 : 0
 
-        case .NextPageError:
+        case .nextPageError:
             return state.nextPageState.error != nil ? 1 : 0
 
-        case .NextPageCompleted:
-            return state.nextPageState == .Completed ? 1 : 0
+        case .nextPageCompleted:
+            return state.nextPageState == .completed ? 1 : 0
         }
     }
 
-    @objc func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath)
+    @objc func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath)
         -> UICollectionViewCell
     {
         switch Section(rawValue: indexPath.section)!
         {
-        case .PreviousPagePull:
+        case .previousPagePull:
             return collectionView.dequeue(PullDisplay.self, forIndexPath: indexPath)
 
-        case .PreviousPageActivity:
+        case .previousPageActivity:
             return collectionView.dequeue(ActivityDisplay.self, forIndexPath: indexPath)
 
-        case .PreviousPageError:
+        case .previousPageError:
             let cell = collectionView.dequeue(ErrorDisplay.self, forIndexPath: indexPath)
             cell.error = parent.arrayLoaderState.previousPageState.error
             return cell
 
-        case .CustomHeaderView:
+        case .customHeaderView:
             let cell = collectionView.dequeue(CustomHeaderViewCollectionViewCell.self, forIndexPath: indexPath)
 
             if let view = parent.customHeaderView
@@ -108,11 +108,11 @@ internal final class CollectionViewHelper
 
                 // add the view to the new cell
                 cell.contentView.addSubview(view)
-                cell.addConstraints([NSLayoutAttribute.Leading, .Trailing, .Top, .Bottom].map({ attribute in
+                cell.addConstraints([NSLayoutAttribute.leading, .trailing, .top, .bottom].map({ attribute in
                     NSLayoutConstraint(
                         item: view,
                         attribute: attribute,
-                        relatedBy: .Equal,
+                        relatedBy: .equal,
                         toItem: cell.contentView,
                         attribute: attribute,
                         multiplier: 1,
@@ -123,48 +123,48 @@ internal final class CollectionViewHelper
 
             return cell
 
-        case .Values:
+        case .values:
             let cell = collectionView.dequeue(ValueDisplay.self, forIndexPath: indexPath)
             cell.value = parent.arrayLoaderState.elements[indexPath.item]
             return cell
 
-        case .NextPageActivity:
+        case .nextPageActivity:
             return collectionView.dequeue(ActivityDisplay.self, forIndexPath: indexPath)
 
-        case .NextPageError:
+        case .nextPageError:
             let cell = collectionView.dequeue(ErrorDisplay.self, forIndexPath: indexPath)
             cell.error = parent.arrayLoaderState.previousPageState.error
             return cell
 
-        case .NextPageCompleted:
+        case .nextPageCompleted:
             return collectionView.dequeue(CompletedDisplay.self, forIndexPath: indexPath)
         }
     }
 
     // MARK: - Collection View Delegate
-    @objc func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath)
+    @objc func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
         parent.didSelectValue?(
-            cell: collectionView.cellForItemAtIndexPath(indexPath),
-            value: parent.arrayLoaderState.elements[indexPath.item]
+            collectionView.cellForItem(at: indexPath),
+            parent.arrayLoaderState.elements[indexPath.item]
         )
     }
     
-    @objc func collectionView(collectionView: UICollectionView, shouldHighlightItemAtIndexPath indexPath: NSIndexPath) -> Bool
+    @objc func collectionView(_ collectionView: UICollectionView, shouldHighlightItemAt indexPath: IndexPath) -> Bool
     {
-        return Section(rawValue: indexPath.section)! == .Values
+        return Section(rawValue: indexPath.section)! == .values
     }
     
-    @objc func scrollViewDidScroll(scrollView: UIScrollView)
+    @objc func scrollViewDidScroll(_ scrollView: UIScrollView)
     {
-        if (parent.arrayLoader.value.nextPageState.isHasMore ?? false)
-            && parent.collectionView.indexPathsForVisibleItems().reduce(false, combine: { current, path in
-                current || path.section == Section.NextPageActivity.rawValue
+        if parent.arrayLoader.value.nextPageState.isHasMore
+            && parent.collectionView.indexPathsForVisibleItems.reduce(false, { current, path in
+                current || path.section == Section.nextPageActivity.rawValue
             })
         {
             parent.arrayLoader.value.loadNextPage()
         }
 
-        parent.didScroll?(offset: scrollView.contentOffset)
+        parent.didScroll?(scrollView.contentOffset)
     }
 }

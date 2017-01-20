@@ -10,7 +10,7 @@
 
 import ArrayLoader
 import LayoutModules
-import ReactiveCocoa
+import ReactiveSwift
 import UIKit
 import enum Result.NoError
 
@@ -24,12 +24,12 @@ public final class ArrayLoaderCollectionViewController
      ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
      PullDisplay: ArrayLoaderPullToRefreshDisplaying,
-     CompletedDisplay
+     CompletedDisplay>
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,
            ActivityDisplay: UICollectionViewCell,
            PullDisplay: UICollectionViewCell,
-           CompletedDisplay: UICollectionViewCell>
+           CompletedDisplay: UICollectionViewCell
 {
     // MARK: - Initialization
 
@@ -59,7 +59,7 @@ public final class ArrayLoaderCollectionViewController
         self.customHeaderView = customHeaderView
 
         // create collection view layout
-        self.layout = LayoutModulesCollectionViewLayout(majorAxis: .Vertical, moduleForSection: { section in
+        self.layout = LayoutModulesCollectionViewLayout(majorAxis: .vertical, moduleForSection: { section in
             LayoutModule.moduleForSection(
                 Section(rawValue: section)!,
                 activityItemSize: activityItemSize,
@@ -75,11 +75,11 @@ public final class ArrayLoaderCollectionViewController
         self.collectionView = collectionView
 
         collectionView.registerCellClass(CustomHeaderViewCollectionViewCell.self)
-        collectionView.registerCellClass(ValueDisplay)
-        collectionView.registerCellClass(ErrorDisplay)
-        collectionView.registerCellClass(ActivityDisplay)
-        collectionView.registerCellClass(PullDisplay)
-        collectionView.registerCellClass(CompletedDisplay)
+        collectionView.registerCellClass(ValueDisplay.self)
+        collectionView.registerCellClass(ErrorDisplay.self)
+        collectionView.registerCellClass(ActivityDisplay.self)
+        collectionView.registerCellClass(PullDisplay.self)
+        collectionView.registerCellClass(CompletedDisplay.self)
 
         // create helper object to implement collection view
         let helper = CollectionViewHelper(parent: self)
@@ -89,16 +89,16 @@ public final class ArrayLoaderCollectionViewController
 
         // watch state and reload collection view
         arrayLoader.producer
-            .flatMap(.Latest, transform: { $0.events.producer })
-            .skip(1)
-            .observeOn(UIScheduler())
-            .flatMap(.Concat, transform: { [weak self] event in
+            .flatMap(.latest, transform: { $0.events.producer })
+            .skip(first: 1)
+            .observe(on: UIScheduler())
+            .flatMap(.concat, transform: { [weak self] event in
                 self?.updateCollectionViewProducer(for: event) ?? SignalProducer.empty
             })
             .start()
 
         // automatically load the first page of new array loaders
-        arrayLoader.signal.observeNext({ loader in
+        arrayLoader.signal.observeValues({ loader in
             if loader.elements.count == 0 && loader.nextPageState.isHasMore
             {
                 loader.loadNextPage()
@@ -112,11 +112,11 @@ public final class ArrayLoaderCollectionViewController
     public let collectionView: UICollectionView
 
     /// The helper object for this controller.
-    private var helper: CollectionViewHelper
+    fileprivate var helper: CollectionViewHelper
         <ValueDisplay, ErrorDisplay, ActivityDisplay, PullDisplay, CompletedDisplay>?
 
     /// The collection view layout.
-    private let layout: LayoutModulesCollectionViewLayout
+    fileprivate let layout: LayoutModulesCollectionViewLayout
 
     /// The current major axis for the collection view layout.
     public var majorAxis: Axis
@@ -150,15 +150,15 @@ public final class ArrayLoaderCollectionViewController
     // MARK: - Callbacks
 
     /// A callback sent when the user selects a value from the collection view.
-    public var didSelectValue: ((cell: UICollectionViewCell?, value: ValueDisplay.Value) -> ())?
+    public var didSelectValue: ((_ cell: UICollectionViewCell?, _ value: ValueDisplay.Value) -> ())?
 
     /// A callback sent when the user scrolls the collection view.
-    public var didScroll: ((offset: CGPoint) -> ())?
+    public var didScroll: ((_ offset: CGPoint) -> ())?
 }
 
 extension ArrayLoaderCollectionViewController
 {
-    private func updateCollectionViewProducer(for event: LoaderEvent<ValueDisplay.Value, ErrorDisplay.Error>)
+    fileprivate func updateCollectionViewProducer(for event: LoaderEvent<ValueDisplay.Value, ErrorDisplay.Error>)
         -> SignalProducer<(), NoError>
     {
         return SignalProducer { [weak self] observer, disposable in
@@ -169,48 +169,48 @@ extension ArrayLoaderCollectionViewController
 
             switch event
             {
-            case .Current:
+            case .current:
                 strong.collectionView.reloadData()
                 observer.sendCompleted()
 
-            case .NextPageLoading:
+            case .nextPageLoading:
                 disposable += strong.collectionView
-                    .updateForPageLoadingEventProducer(sections: [.NextPageActivity, .NextPageError])
+                    .updateForPageLoadingEventProducer(sections: [.nextPageActivity, .nextPageError])
                     .start(observer)
 
-            case .PreviousPageLoading:
+            case .previousPageLoading:
                 disposable += strong.collectionView
-                    .updateForPageLoadingEventProducer(sections: [.PreviousPageActivity, .PreviousPageError, .PreviousPagePull])
+                    .updateForPageLoadingEventProducer(sections: [.previousPageActivity, .previousPageError, .previousPagePull])
                     .start(observer)
 
-            case let .NextPageLoaded(state, _, newElements):
+            case let .nextPageLoaded(state, _, newElements):
                 disposable += strong.collectionView
                     .updateForPageLoadedEventProducer(
-                        sections: [.NextPageActivity, .NextPageCompleted],
+                        sections: [.nextPageActivity, .nextPageCompleted],
                         indexPaths: (state.elements.count - newElements.count..<state.elements.count).map({ item in
-                            NSIndexPath(forItem: item, inSection: Section.Values.rawValue)
+                            IndexPath(item: item, section: Section.values.rawValue)
                         })
                     )
                     .start(observer)
 
-            case let .PreviousPageLoaded(_, _, newElements):
+            case let .previousPageLoaded(_, _, newElements):
                 disposable += strong.collectionView
                     .updateForPageLoadedEventProducer(
-                        sections: [.PreviousPageActivity, .PreviousPagePull],
+                        sections: [.previousPageActivity, .previousPagePull],
                         indexPaths: (0..<newElements.count).map({ item in
-                            NSIndexPath(forItem: item, inSection: Section.Values.rawValue)
+                            IndexPath(item: item, section: Section.values.rawValue)
                         })
                     )
                     .start(observer)
 
-            case .NextPageFailed:
+            case .nextPageFailed:
                 disposable += strong.collectionView
-                    .updateForPageLoadingEventProducer(sections: [.NextPageActivity, .NextPageError])
+                    .updateForPageLoadingEventProducer(sections: [.nextPageActivity, .nextPageError])
                     .start(observer)
 
-            case .PreviousPageFailed:
+            case .previousPageFailed:
                 disposable += strong.collectionView
-                    .updateForPageLoadingEventProducer(sections: [.PreviousPageActivity, .PreviousPageError])
+                    .updateForPageLoadingEventProducer(sections: [.previousPageActivity, .previousPageError])
                     .start(observer)
             }
         }
@@ -220,31 +220,31 @@ extension ArrayLoaderCollectionViewController
 // MARK: - Collection View Updates
 extension UICollectionView
 {
-    private func batchUpdatesProducer(updates: () -> ()) -> SignalProducer<(), NoError>
+    fileprivate func batchUpdatesProducer(_ updates: @escaping () -> ()) -> SignalProducer<(), NoError>
     {
         return SignalProducer { observer, _ in
             self.performBatchUpdates(updates, completion: { _ in observer.sendCompleted() })
         }
     }
 
-    private func reload(sections sections: [Section])
+    fileprivate func reload(sections: [Section])
     {
         let set = NSMutableIndexSet()
-        sections.forEach({ set.addIndex($0.rawValue) })
-        reloadSections(set)
+        sections.forEach({ set.add($0.rawValue) })
+        reloadSections(set as IndexSet)
     }
 
-    private func updateForPageLoadingEventProducer(sections sections: [Section]) -> SignalProducer<(), NoError>
+    fileprivate func updateForPageLoadingEventProducer(sections: [Section]) -> SignalProducer<(), NoError>
     {
         return batchUpdatesProducer { self.reload(sections: sections) }
     }
 
-    private func updateForPageLoadedEventProducer(sections sections: [Section], indexPaths: [NSIndexPath])
+    fileprivate func updateForPageLoadedEventProducer(sections: [Section], indexPaths: [IndexPath])
         -> SignalProducer<(), NoError>
     {
         return batchUpdatesProducer {
             self.reload(sections: sections)
-            self.insertItemsAtIndexPaths(indexPaths)
+            self.insertItems(at: indexPaths)
         }
     }
 }
