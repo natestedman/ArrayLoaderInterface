@@ -142,6 +142,11 @@ internal final class CollectionViewHelper
     }
 
     // MARK: - Collection View Delegate
+    @objc func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath)
+    {
+        parent.willDisplayCell?(cell, indexPath)
+    }
+
     @objc func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
     {
         parent.didSelectValue?(

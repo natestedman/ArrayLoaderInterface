@@ -149,6 +149,9 @@ public final class ArrayLoaderCollectionViewController
 
     // MARK: - Callbacks
 
+    /// A callback sent when the view will display a cell.
+    public var willDisplayCell: ((_ cell: UICollectionViewCell, _ indexPath: IndexPath) -> ())?
+
     /// A callback sent when the user selects a value from the collection view.
     public var didSelectValue: ((_ cell: UICollectionViewCell?, _ value: ValueDisplay.Value) -> ())?
 
