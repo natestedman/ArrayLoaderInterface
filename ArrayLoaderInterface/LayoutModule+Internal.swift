@@ -33,9 +33,6 @@ extension LayoutModule
     {
         switch section
         {
-        case .previousPagePull:
-            return conditionalTableModule(activityItemSize)
-
         case .previousPageActivity:
             return conditionalTableModule(activityItemSize)
 

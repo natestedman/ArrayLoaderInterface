@@ -11,9 +11,6 @@
 /// The sections used by an array loader interface controller.
 internal enum Section: Int
 {
-    /// A section displaying a pull-to-refresh interface.
-    case previousPagePull
-
     /// A section displaying an activity indicator cell while the previous page is loading.
     case previousPageActivity
 

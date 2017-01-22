@@ -16,19 +16,17 @@ internal final class CollectionViewHelper
     <ValueDisplay: ArrayLoaderValueDisplaying,
      ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
-     PullDisplay: ArrayLoaderPullToRefreshDisplaying,
      CompletedDisplay>
     : NSObject, UICollectionViewDataSource, UICollectionViewDelegate
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,
            ActivityDisplay: UICollectionViewCell,
-           PullDisplay: UICollectionViewCell,
            CompletedDisplay: UICollectionViewCell
     
 {
     /// The type of the parent controller.
     typealias Parent =
-        ArrayLoaderCollectionViewController<ValueDisplay, ErrorDisplay, ActivityDisplay, PullDisplay, CompletedDisplay>
+        ArrayLoaderCollectionViewController<ValueDisplay, ErrorDisplay, ActivityDisplay, CompletedDisplay>
 
     /// The parent controller associated with this helper.
     unowned let parent: Parent
@@ -43,6 +41,20 @@ internal final class CollectionViewHelper
         self.parent = parent
     }
 
+    // MARK: - Refreshing
+    @objc func refreshAction()
+    {
+        switch parent.previousPageLoadingMode.value
+        {
+        case .disallow:
+            break
+        case .loadPreviousPage:
+            parent.arrayLoader.value.loadPreviousPage()
+        case let .replace(_, function):
+            parent.arrayLoader.value = function()
+        }
+    }
+
     // MARK: - Collection View Data Source
     @objc func numberOfSections(in collectionView: UICollectionView) -> Int
     {
@@ -55,10 +67,6 @@ internal final class CollectionViewHelper
 
         switch Section(rawValue: section)!
         {
-        case .previousPagePull:
-            let mode = parent.previousPageLoadingMode.value
-            return (state.previousPageState == .hasMore && mode.isLoadPreviousPage) || mode.isReplace ? 1 : 0
-
         case .previousPageActivity:
             return state.previousPageState == .loading ? 1 : 0
 
@@ -88,9 +96,6 @@ internal final class CollectionViewHelper
     {
         switch Section(rawValue: indexPath.section)!
         {
-        case .previousPagePull:
-            return collectionView.dequeue(PullDisplay.self, forIndexPath: indexPath)
-
         case .previousPageActivity:
             return collectionView.dequeue(ActivityDisplay.self, forIndexPath: indexPath)
 

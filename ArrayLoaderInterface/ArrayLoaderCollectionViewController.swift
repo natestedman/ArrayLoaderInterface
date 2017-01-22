@@ -23,12 +23,10 @@ public final class ArrayLoaderCollectionViewController
     <ValueDisplay: ArrayLoaderValueDisplaying,
      ErrorDisplay: ArrayLoaderErrorDisplaying,
      ActivityDisplay,
-     PullDisplay: ArrayLoaderPullToRefreshDisplaying,
      CompletedDisplay>
      where ValueDisplay: UICollectionViewCell,
            ErrorDisplay: UICollectionViewCell,
            ActivityDisplay: UICollectionViewCell,
-           PullDisplay: UICollectionViewCell,
            CompletedDisplay: UICollectionViewCell
 {
     // MARK: - Initialization
@@ -36,8 +34,6 @@ public final class ArrayLoaderCollectionViewController
     /**
     Initializes an array loader collection view controller.
 
-    - parameter pullItemSize:       The size for the pull-to-refresh cell - only one dimension is used at a time, based
-                                    on the current major layout axis. The default value of this parameter is `(44, 44)`.
     - parameter activityItemSize:   The size for activity cells - only one dimension is used at a time, based on the
                                     current major layout axis. The default value of this parameter is `(44, 44)`.
     - parameter errorItemSize:      The row height for error cells - only one dimension is used at a time, based on the
@@ -48,8 +44,7 @@ public final class ArrayLoaderCollectionViewController
     - parameter customHeaderView:   An optional custom header view, displayed after activity content for the next page.
     - parameter valuesLayoutModule: The layout module to use for the section displaying the array loader's values.
     */
-    public init(pullItemSize: CGSize = CGSize(width: 44, height: 44),
-                activityItemSize: CGSize = CGSize(width: 44, height: 44),
+    public init(activityItemSize: CGSize = CGSize(width: 44, height: 44),
                 errorItemSize: CGSize = CGSize(width: 44, height: 44),
                 completedItemSize: CGSize = CGSize.zero,
                 customHeaderView: UIView? = nil,
@@ -78,7 +73,6 @@ public final class ArrayLoaderCollectionViewController
         collectionView.registerCellClass(ValueDisplay.self)
         collectionView.registerCellClass(ErrorDisplay.self)
         collectionView.registerCellClass(ActivityDisplay.self)
-        collectionView.registerCellClass(PullDisplay.self)
         collectionView.registerCellClass(CompletedDisplay.self)
 
         // create helper object to implement collection view
@@ -104,6 +98,69 @@ public final class ArrayLoaderCollectionViewController
                 loader.loadNextPage()
             }
         })
+
+        // add and remove the refresh control
+        let arrayLoaderState = arrayLoader.producer.flatMap(.latest, transform: { $0.state.producer })
+
+        refreshControl <~ SignalProducer.combineLatest(arrayLoaderState, previousPageLoadingMode.producer)
+            .map({ state, mode in
+                (state.previousPageState == .hasMore && mode.isLoadPreviousPage) || mode.isReplace ? mode.title : nil
+            })
+            .skipRepeats(==)
+            .observe(on: UIScheduler())
+            .map({ optionalTitle -> UIRefreshControl? in
+                optionalTitle.map({ title in
+                    let control = UIRefreshControl()
+                    control.attributedTitle = NSAttributedString(string: title, attributes: nil)
+                    return control
+                })
+            })
+
+        refreshControl.producer.combinePrevious(nil).startWithValues({ [weak self] previous, current in
+            previous?.removeFromSuperview()
+
+            if let control = current, let strong = self
+            {
+                control.addTarget(
+                    strong.helper,
+                    action: #selector(Helper.refreshAction),
+                    for: .valueChanged
+                )
+
+                strong.collectionView.addSubview(control)
+            }
+        })
+
+        // update the refresh control's loading state
+        let loadingPreviousPage = arrayLoader.producer.flatMap(.latest, transform: { loader in
+            SignalProducer(value: loader.previousPageState.isLoading).concat(
+                loader.events.map({ event -> Bool? in
+                    switch event
+                    {
+                    case .previousPageLoading:
+                        return true
+                    case .previousPageLoaded, .previousPageFailed:
+                        return false
+                    default:
+                        return nil
+                    }
+                }).skipNil()
+            )
+        }).skipRepeats()
+
+        SignalProducer.combineLatest(refreshControl.producer, loadingPreviousPage)
+            .startWithValues({ optionalControl, loadingPreviousPage in
+                guard let control = optionalControl else { return }
+
+                if loadingPreviousPage && !control.isRefreshing
+                {
+                    control.beginRefreshing()
+                }
+                else if !loadingPreviousPage && control.isRefreshing
+                {
+                    control.endRefreshing()
+                }
+            })
     }
 
     // MARK: - Collection View
@@ -111,9 +168,11 @@ public final class ArrayLoaderCollectionViewController
     /// The collection view managed by the controller.
     public let collectionView: UICollectionView
 
+    /// A typealias for `helper`.
+    fileprivate typealias Helper = CollectionViewHelper<ValueDisplay, ErrorDisplay, ActivityDisplay, CompletedDisplay>
+
     /// The helper object for this controller.
-    fileprivate var helper: CollectionViewHelper
-        <ValueDisplay, ErrorDisplay, ActivityDisplay, PullDisplay, CompletedDisplay>?
+    fileprivate var helper: Helper?
 
     /// The collection view layout.
     fileprivate let layout: LayoutModulesCollectionViewLayout
@@ -136,10 +195,13 @@ public final class ArrayLoaderCollectionViewController
     /// ReactiveCocoa.
     var arrayLoaderState: LoaderState<ValueDisplay.Value, ErrorDisplay.Error>
 
-    // MARK: - Custom Header View
+    // MARK: - Internal Interface Elements
 
     /// If provided, this view will be visible below the previous page content.
     let customHeaderView: UIView?
+
+    /// The current refresh control, if applicable.
+    let refreshControl = MutableProperty(UIRefreshControl?.none)
 
     // MARK: - State
 
@@ -185,7 +247,7 @@ extension ArrayLoaderCollectionViewController
 
             case .previousPageLoading:
                 disposable += strong.collectionView
-                    .updateForPageLoadingEventProducer(sections: [.previousPageActivity, .previousPageError, .previousPagePull])
+                    .updateForPageLoadingEventProducer(sections: [.previousPageActivity, .previousPageError])
                     .start(observer)
 
             case let .nextPageLoaded(state, _, newElements):
@@ -201,7 +263,7 @@ extension ArrayLoaderCollectionViewController
             case let .previousPageLoaded(_, _, newElements):
                 disposable += strong.collectionView
                     .updateForPageLoadedEventProducer(
-                        sections: [.previousPageActivity, .previousPagePull],
+                        sections: [.previousPageActivity],
                         indexPaths: (0..<newElements.count).map({ item in
                             IndexPath(item: item, section: Section.values.rawValue)
                         })
@@ -231,10 +293,10 @@ public enum PreviousPageLoadingMode<Value, Error: Swift.Error>
     case disallow
 
     /// The array loader's `loadPreviousPage` method will be called.
-    case loadPreviousPage
+    case loadPreviousPage(title: String)
 
     /// A new array loader will replace the current array loader.
-    case replace(() -> AnyArrayLoader<Value, Error>)
+    case replace(title: String, replacement: () -> AnyArrayLoader<Value, Error>)
 }
 
 extension PreviousPageLoadingMode
@@ -262,6 +324,19 @@ extension PreviousPageLoadingMode
             return false
         case .replace:
             return true
+        }
+    }
+
+    var title: String?
+    {
+        switch self
+        {
+        case .disallow:
+            return nil
+        case let .loadPreviousPage(title):
+            return title
+        case let .replace(title, _):
+            return title
         }
     }
 }
