@@ -56,7 +56,8 @@ internal final class CollectionViewHelper
         switch Section(rawValue: section)!
         {
         case .previousPagePull:
-            return state.previousPageState == .hasMore && parent.allowLoadingPreviousPage.value ? 1 : 0
+            let mode = parent.previousPageLoadingMode.value
+            return (state.previousPageState == .hasMore && mode.isLoadPreviousPage) || mode.isReplace ? 1 : 0
 
         case .previousPageActivity:
             return state.previousPageState == .loading ? 1 : 0

@@ -143,9 +143,11 @@ public final class ArrayLoaderCollectionViewController
 
     // MARK: - State
 
-    /// Whether or not the interface should allow loading the previous page - a client might want to limit this by
-    /// only allowing the previous page to load if the first page has already loaded.
-    public let allowLoadingPreviousPage = MutableProperty(false)
+    /// The interface's behavior with respect to loading the previous page - a client might want to limit this by
+    /// only allowing the previous page to load if the first page has already loaded. The default value is `disallow`.
+    public let previousPageLoadingMode = MutableProperty(
+        PreviousPageLoadingMode<ValueDisplay.Value, ErrorDisplay.Error>.disallow
+    )
 
     // MARK: - Callbacks
 
@@ -216,6 +218,50 @@ extension ArrayLoaderCollectionViewController
                     .updateForPageLoadingEventProducer(sections: [.previousPageActivity, .previousPageError])
                     .start(observer)
             }
+        }
+    }
+}
+
+// MARK: - Previous Page Loading
+
+/// Describes the previous page loading methods for `ArrayLoaderCollectionViewController`.
+public enum PreviousPageLoadingMode<Value, Error: Swift.Error>
+{
+    /// Loading the previous page is disallowed.
+    case disallow
+
+    /// The array loader's `loadPreviousPage` method will be called.
+    case loadPreviousPage
+
+    /// A new array loader will replace the current array loader.
+    case replace(() -> AnyArrayLoader<Value, Error>)
+}
+
+extension PreviousPageLoadingMode
+{
+    var isLoadPreviousPage: Bool
+    {
+        switch self
+        {
+        case .disallow:
+            return false
+        case .loadPreviousPage:
+            return true
+        case .replace:
+            return false
+        }
+    }
+
+    var isReplace: Bool
+    {
+        switch self
+        {
+        case .disallow:
+            return false
+        case .loadPreviousPage:
+            return false
+        case .replace:
+            return true
         }
     }
 }
